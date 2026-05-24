@@ -61,6 +61,7 @@ var skipFilenames = map[string]bool{
 	"cargo.lock":        true,
 	".env":              true,
 	".env.local":        true,
+	"readme.md":         true,
 }
 
 var knownNoExt = map[string]bool{
@@ -410,7 +411,7 @@ func scoreFiles(files []fileEntry, task string) []fileEntry {
 		}
 
 		if isTestFile(files[i].path) {
-			score *= 0.5
+			score *= 0.3
 		}
 
 		files[i].score = score

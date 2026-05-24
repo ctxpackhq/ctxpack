@@ -32,7 +32,7 @@ func TestScoreFilesPenalizesGoTestFiles(t *testing.T) {
 	if sourceScore == 0 || testScore == 0 {
 		t.Fatalf("expected non-zero scores, got source=%f test=%f", sourceScore, testScore)
 	}
-	if math.Abs(testScore-sourceScore*0.5) > 1e-12 {
-		t.Fatalf("expected test score to be half of source score, got source=%f test=%f", sourceScore, testScore)
+	if math.Abs(testScore-sourceScore*0.3) > 1e-12 {
+		t.Fatalf("expected test score to be 0.3x source score, got source=%f test=%f", sourceScore, testScore)
 	}
 }
