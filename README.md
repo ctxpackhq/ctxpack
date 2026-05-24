@@ -83,6 +83,23 @@ ctxpack "fix the auth bug" -d ~/projects/backend
 ctxpack "refactor database layer" > context.md
 ```
 
+**Preview scored files without outputting content:**
+
+```sh
+ctxpack "add rate limiting to the API handler" --preview
+```
+
+```
+┌─────────────────────────────┬───────┬────────┐
+│ File                        │ Score │ Tokens │
+├─────────────────────────────┼───────┼────────┤
+│ internal/handler/api.go     │ 3.42  │    821 │
+│ internal/middleware/auth.go │ 2.18  │    634 │
+│ internal/router/router.go   │ 1.05  │    312 │
+└─────────────────────────────┴───────┴────────┘
+Total: 3 files, 1767 tok
+```
+
 ---
 
 ## How it works
