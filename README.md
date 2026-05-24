@@ -4,7 +4,7 @@
 
 [![Demo](https://asciinema.org/a/VNvDN6vhL06FNeO5.svg)](https://asciinema.org/a/VNvDN6vhL06FNeO5)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-BUSL--1.1-blue.svg)](https://opensource.org/licenses/MIT)
 
 ---
 
