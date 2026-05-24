@@ -10,7 +10,9 @@
 
 You open a new AI chat. You paste in your project structure. You explain what the codebase does. Again. You do this every single session because the AI has no memory of what you built or why.
 
-`ctxpack` fixes this. Give it a task description; it scans your repo, ranks every file by relevance using TF-IDF, and bundles the top matches into a ready-to-paste context block — within a ~8 000-token budget.
+`ctxpack` fixes this. Give it a task description; it scans your local repo, finds the files most relevant to that task, and bundles them into a ready-to-paste Markdown context block for Claude, ChatGPT, Cursor, or any AI coding chat — within a ~8 000-token budget.
+
+It does not call an AI model, upload your code, or modify your files.
 
 ---
 
@@ -49,7 +51,7 @@ Files selected: 6
 Token estimate: 3821 / 8000
 ```
 
-The formatted context is written to stdout and copied to your clipboard:
+By default, ctxpack writes the context to stdout and copies it to your clipboard:
 
 ```markdown
 # Context for: add rate limiting to the API handler
@@ -115,10 +117,20 @@ No output is written to stdout or clipboard in preview mode.
 
 ---
 
+## What ctxpack is not
+
+- It does not call an AI model.
+- It does not upload your code anywhere.
+- It does not modify your files.
+
+It only scans your local repo and prints a Markdown context bundle.
+
+---
+
 ## How it works
 
 - Walks your repo, skipping `node_modules`, `.git`, `vendor`, lock files, and binaries.
-- Scores every file against your task description with TF-IDF — files whose content and path share the most terms with your task rank highest.
+- Scores every file against your task description using TF-IDF — files whose content and path share the most terms with your task rank highest.
 - Greedily packs the top-scoring files into a single Markdown block, stopping at ~8 000 tokens.
 
 ---
@@ -127,9 +139,10 @@ No output is written to stdout or clipboard in preview mode.
 
 - `.env`, `.env.local`, and all `.env.*` files are never included in output.
 - `.gitignore` is respected — any file or directory your repo ignores, ctxpack ignores too.
+- ctxpack avoids common secret files, but you should still review output before sharing it externally — secrets can live in `config.yml`, test fixtures, and other non-standard locations.
 
 ---
 
 ## License
 
-[Business Source License 1.1](LICENSE)
+[Business Source License 1.1](LICENSE) — source is available to read and use for non-production purposes. Commercial or production use may be subject to license terms; see [LICENSE](LICENSE) for details.
