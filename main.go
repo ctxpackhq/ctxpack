@@ -16,9 +16,8 @@ import (
 )
 
 const (
-	tokenBudget   = 8000
-	charsPerToken = 4
-	charBudget    = tokenBudget * charsPerToken
+	defaultTokenBudget = 8000
+	charsPerToken      = 4
 )
 
 var skipDirs = map[string]bool{
@@ -72,6 +71,7 @@ type fileEntry struct {
 func main() {
 	var root string
 	var noClipboard bool
+	var maxTokens int
 
 	cmd := &cobra.Command{
 		Use:   "ctxpack \"task description\"",
@@ -79,19 +79,20 @@ func main() {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			task := args[0]
-			return run(task, root, noClipboard)
+			return run(task, root, noClipboard, maxTokens)
 		},
 	}
 
 	cmd.Flags().StringVarP(&root, "dir", "d", ".", "Root directory to scan")
 	cmd.Flags().BoolVar(&noClipboard, "no-clipboard", false, "Disable clipboard copy")
+	cmd.Flags().IntVar(&maxTokens, "max-tokens", defaultTokenBudget, "Token budget for selected files")
 
 	if err := cmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }
 
-func run(task, root string, noClipboard bool) error {
+func run(task, root string, noClipboard bool, maxTokens int) error {
 	absRoot, err := filepath.Abs(root)
 	if err != nil {
 		return fmt.Errorf("resolving root: %w", err)
@@ -109,7 +110,7 @@ func run(task, root string, noClipboard bool) error {
 
 	scored := scoreFiles(files, task)
 
-	selected := selectFiles(scored)
+	selected := selectFiles(scored, maxTokens*charsPerToken)
 
 	output := formatOutput(task, selected)
 	var contentLen int
@@ -131,7 +132,7 @@ func run(task, root string, noClipboard bool) error {
 	fmt.Fprintf(os.Stderr, "\n--- Summary ---\n")
 	fmt.Fprintf(os.Stderr, "Files scanned:  %d\n", scanned)
 	fmt.Fprintf(os.Stderr, "Files selected: %d\n", len(selected))
-	fmt.Fprintf(os.Stderr, "Token estimate: %d / %d\n", tokens, tokenBudget)
+	fmt.Fprintf(os.Stderr, "Token estimate: %d / %d\n", tokens, maxTokens)
 
 	return nil
 }
@@ -348,7 +349,7 @@ func scoreFiles(files []fileEntry, task string) []fileEntry {
 	return files
 }
 
-func selectFiles(files []fileEntry) []fileEntry {
+func selectFiles(files []fileEntry, charBudget int) []fileEntry {
 	var selected []fileEntry
 	budget := charBudget
 
