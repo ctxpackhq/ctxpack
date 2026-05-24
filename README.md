@@ -2,6 +2,8 @@
 
 **Task-aware context bundler for AI coding tools**
 
+[![Demo](https://asciinema.org/a/rW8ppvrvaRhP6CXn.svg)](https://asciinema.org/a/rW8ppvrvaRhP6CXn)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
@@ -14,9 +16,19 @@ You open a new AI chat. You paste in your project structure. You explain what th
 
 ## Install
 
+**Go install:**
 ```sh
-go install github.com/ctxpackhq/ctxpack@latest
+go install github.com/ctxpackhq/ctxpack@v0.1.7
 ```
+
+**Pre-built binaries (no Go required):**
+
+| Platform | Download |
+|---|---|
+| Linux amd64 | [ctxpack-linux-amd64](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.7/ctxpack-linux-amd64) |
+| macOS amd64 | [ctxpack-darwin-amd64](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.7/ctxpack-darwin-amd64) |
+| macOS arm64 (M1/M2) | [ctxpack-darwin-arm64](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.7/ctxpack-darwin-arm64) |
+| Windows amd64 | [ctxpack-windows-amd64.exe](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.7/ctxpack-windows-amd64.exe) |
 
 ---
 
