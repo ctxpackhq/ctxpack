@@ -61,6 +61,11 @@ var skipFilenames = map[string]bool{
 	"Cargo.lock":        true,
 }
 
+var knownNoExt = map[string]bool{
+	"makefile": true, "dockerfile": true, "rakefile": true,
+	"gemfile": true, "procfile": true, "vagrantfile": true,
+}
+
 type fileEntry struct {
 	path    string
 	content string
@@ -93,6 +98,10 @@ func main() {
 }
 
 func run(task, root string, noClipboard bool, maxTokens int) error {
+	if maxTokens <= 0 {
+		return fmt.Errorf("--max-tokens must be greater than zero")
+	}
+
 	absRoot, err := filepath.Abs(root)
 	if err != nil {
 		return fmt.Errorf("resolving root: %w", err)
@@ -127,7 +136,7 @@ func run(task, root string, noClipboard bool, maxTokens int) error {
 		}
 	}
 
-	fmt.Fprintf(os.Stdout, "%s\n", output)
+	fmt.Fprint(os.Stdout, output)
 
 	fmt.Fprintf(os.Stderr, "\n--- Summary ---\n")
 	fmt.Fprintf(os.Stderr, "Files scanned:  %d\n", scanned)
@@ -174,11 +183,6 @@ func collectFiles(root string) ([]fileEntry, error) {
 		ext := strings.ToLower(filepath.Ext(name))
 		baseLower := strings.ToLower(name)
 
-		// allow files with no extension that are known names
-		knownNoExt := map[string]bool{
-			"makefile": true, "dockerfile": true, "rakefile": true,
-			"gemfile": true, "procfile": true, "vagrantfile": true,
-		}
 		if ext == "" && !knownNoExt[baseLower] {
 			return nil
 		}
@@ -186,7 +190,7 @@ func collectFiles(root string) ([]fileEntry, error) {
 			return nil
 		}
 
-		info, err := d.Info()
+		info, err := os.Stat(path)
 		if err != nil || info.Size() == 0 {
 			return nil
 		}
@@ -225,18 +229,14 @@ func isBinary(data []byte) bool {
 		if b == 0 {
 			return true
 		}
-		if b < 7 || (b > 14 && b < 32 && b != 27) {
-			// control chars other than tab/newline/cr/etc
-			nonPrint := 0
-			for _, c := range check {
-				if c < 9 || (c > 13 && c < 32) {
-					nonPrint++
-				}
-			}
-			return nonPrint > len(check)/10
+	}
+	nonPrint := 0
+	for _, b := range check {
+		if b < 9 || (b > 13 && b < 32) {
+			nonPrint++
 		}
 	}
-	return false
+	return nonPrint > len(check)/10
 }
 
 func tokenize(text string) []string {
@@ -304,12 +304,8 @@ func scoreFiles(files []fileEntry, task string) []fileEntry {
 		toks := tokenize(f.content)
 		tf := termFreq(toks)
 		tokenSets[i] = tf
-		seen := make(map[string]bool)
 		for t := range tf {
-			if !seen[t] {
-				docFreq[t]++
-				seen[t] = true
-			}
+			docFreq[t]++
 		}
 	}
 
