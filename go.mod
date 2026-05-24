@@ -1,4 +1,4 @@
-module ctxpack
+module github.com/ctxpackhq/ctxpack
 
 go 1.21
 
