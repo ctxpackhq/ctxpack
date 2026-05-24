@@ -77,6 +77,7 @@ func main() {
 	var root string
 	var noClipboard bool
 	var maxTokens int
+	var preview bool
 
 	cmd := &cobra.Command{
 		Use:   "ctxpack \"task description\"",
@@ -84,12 +85,13 @@ func main() {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			task := args[0]
-			return run(task, root, noClipboard, maxTokens)
+			return run(task, root, noClipboard, preview, maxTokens)
 		},
 	}
 
 	cmd.Flags().StringVarP(&root, "dir", "d", ".", "Root directory to scan")
 	cmd.Flags().BoolVar(&noClipboard, "no-clipboard", false, "Disable clipboard copy")
+	cmd.Flags().BoolVar(&preview, "preview", false, "Show file scores and token counts without outputting content")
 	cmd.Flags().IntVar(&maxTokens, "max-tokens", defaultTokenBudget, "Token budget for selected files")
 
 	if err := cmd.Execute(); err != nil {
@@ -97,7 +99,7 @@ func main() {
 	}
 }
 
-func run(task, root string, noClipboard bool, maxTokens int) error {
+func run(task, root string, noClipboard, preview bool, maxTokens int) error {
 	if maxTokens <= 0 {
 		return fmt.Errorf("--max-tokens must be greater than zero")
 	}
@@ -120,6 +122,11 @@ func run(task, root string, noClipboard bool, maxTokens int) error {
 	scored := scoreFiles(files, task)
 
 	selected := selectFiles(scored, maxTokens*charsPerToken)
+
+	if preview {
+		printPreview(selected)
+		return nil
+	}
 
 	output := formatOutput(task, selected)
 	var contentLen int
@@ -144,6 +151,55 @@ func run(task, root string, noClipboard bool, maxTokens int) error {
 	fmt.Fprintf(os.Stderr, "Token estimate: %d / %d\n", tokens, maxTokens)
 
 	return nil
+}
+
+func printPreview(files []fileEntry) {
+	fileW := len("File")
+	scoreW := len("Score")
+	tokW := len("Tokens")
+
+	type row struct {
+		path  string
+		score string
+		tok   string
+	}
+	rows := make([]row, len(files))
+	for i, f := range files {
+		r := row{
+			path:  f.path,
+			score: fmt.Sprintf("%.2f", f.score),
+			tok:   fmt.Sprintf("%d", f.tokens),
+		}
+		if len(r.path) > fileW {
+			fileW = len(r.path)
+		}
+		if len(r.score) > scoreW {
+			scoreW = len(r.score)
+		}
+		if len(r.tok) > tokW {
+			tokW = len(r.tok)
+		}
+		rows[i] = r
+	}
+
+	hr := func(l, m, r string) string {
+		return l + strings.Repeat("─", fileW+2) + m +
+			strings.Repeat("─", scoreW+2) + m +
+			strings.Repeat("─", tokW+2) + r
+	}
+
+	fmt.Println(hr("┌", "┬", "┐"))
+	fmt.Printf("│ %-*s │ %-*s │ %-*s │\n", fileW, "File", scoreW, "Score", tokW, "Tokens")
+	fmt.Println(hr("├", "┼", "┤"))
+
+	totalTok := 0
+	for i, r := range rows {
+		totalTok += files[i].tokens
+		fmt.Printf("│ %-*s │ %-*s │ %*s │\n", fileW, r.path, scoreW, r.score, tokW, r.tok)
+	}
+
+	fmt.Println(hr("└", "┴", "┘"))
+	fmt.Printf("Total: %d files, %d tok\n", len(files), totalTok)
 }
 
 func collectFiles(root string) ([]fileEntry, error) {
