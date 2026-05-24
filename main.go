@@ -108,7 +108,11 @@ func run(task, root string) error {
 	selected := selectFiles(scored)
 
 	output := formatOutput(task, selected)
-	tokens := estimateTokens(output)
+	var contentLen int
+	for _, f := range selected {
+		contentLen += len(f.content)
+	}
+	tokens := (contentLen + charsPerToken - 1) / charsPerToken
 
 	if err := clipboard.WriteAll(output); err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: could not copy to clipboard: %v\n", err)
@@ -320,14 +324,10 @@ func selectFiles(files []fileEntry) []fileEntry {
 		}
 		cost := len(f.content)
 		if cost > budget {
-			// try to fit a truncated version if the file is large
 			continue
 		}
-		budget -= cost
 		selected = append(selected, f)
-		if budget <= 0 {
-			break
-		}
+		budget -= cost
 	}
 
 	return selected
