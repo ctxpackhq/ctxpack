@@ -55,10 +55,10 @@ var skipFilenames = map[string]bool{
 	"yarn.lock":         true,
 	"pnpm-lock.yaml":    true,
 	"go.sum":            true,
-	"Gemfile.lock":      true,
+	"gemfile.lock":      true,
 	"poetry.lock":       true,
 	"composer.lock":     true,
-	"Cargo.lock":        true,
+	"cargo.lock":        true,
 	".env":              true,
 	".env.local":        true,
 }
@@ -228,7 +228,7 @@ func collectFiles(root string) ([]fileEntry, error) {
 		}
 
 		rel, _ := filepath.Rel(root, path)
-		if gi != nil && gi.MatchesPath(rel) {
+		if gi != nil && rel != "." && gi.MatchesPath(rel) {
 			if d.IsDir() {
 				return filepath.SkipDir
 			}
@@ -265,12 +265,15 @@ func collectFiles(root string) ([]fileEntry, error) {
 			return nil
 		}
 
-		info, err := os.Stat(path)
-		if err != nil || info.Size() == 0 {
+		info, err := d.Info()
+		if err != nil {
 			return nil
 		}
-		// skip files larger than 200KB — likely generated or binary
-		if info.Size() > 200*1024 {
+		// skip symlinks — don't follow them outside the repo
+		if info.Mode()&os.ModeSymlink != 0 {
+			return nil
+		}
+		if info.Size() == 0 || info.Size() > 200*1024 {
 			return nil
 		}
 
@@ -439,6 +442,22 @@ func selectFiles(files []fileEntry, charBudget int) []fileEntry {
 	return selected
 }
 
+func backtickFence(content string) string {
+	max := 2
+	run := 0
+	for _, c := range content {
+		if c == '`' {
+			run++
+			if run > max {
+				max = run
+			}
+		} else {
+			run = 0
+		}
+	}
+	return strings.Repeat("`", max+1)
+}
+
 func formatOutput(task string, files []fileEntry) string {
 	var sb strings.Builder
 
@@ -447,14 +466,18 @@ func formatOutput(task string, files []fileEntry) string {
 	sb.WriteString("\n\n")
 
 	for _, f := range files {
+		fence := backtickFence(f.content)
 		sb.WriteString("## ")
 		sb.WriteString(f.path)
-		sb.WriteString("\n\n```\n")
+		sb.WriteString("\n\n")
+		sb.WriteString(fence)
+		sb.WriteString("\n")
 		sb.WriteString(f.content)
 		if !strings.HasSuffix(f.content, "\n") {
 			sb.WriteString("\n")
 		}
-		sb.WriteString("```\n\n")
+		sb.WriteString(fence)
+		sb.WriteString("\n\n")
 	}
 
 	return strings.TrimRight(sb.String(), "\n") + "\n"
