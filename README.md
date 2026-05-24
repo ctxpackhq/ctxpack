@@ -129,8 +129,8 @@ It only scans your local repo and prints a Markdown context bundle.
 
 ## How it works
 
-- Walks your repo, skipping `node_modules`, `.git`, `vendor`, lock files, and binaries.
-- Scores every file against your task description using TF-IDF — files whose content and path share the most terms with your task rank highest.
+- Walks your repo, skipping `node_modules`, `.git`, `vendor`, lock files, `README.md`, and binaries.
+- Scores every file against your task description using TF-IDF — files whose content and path share the most terms with your task rank highest. Test files are scored at 30% weight so source files take priority.
 - Greedily packs the top-scoring files into a single Markdown block, stopping at ~8 000 tokens.
 
 ---
