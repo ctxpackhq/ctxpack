@@ -4,7 +4,7 @@
 
 [![Demo](https://asciinema.org/a/VNvDN6vhL06FNeO5.svg)](https://asciinema.org/a/VNvDN6vhL06FNeO5)
 
-[![License: MIT](https://img.shields.io/badge/License-BUSL--1.1-blue.svg)](https://opensource.org/licenses/MIT)
+[![License: BUSL-1.1](https://img.shields.io/badge/License-BUSL--1.1-orange.svg)](https://mariadb.com/bsl11/)
 
 ---
 
@@ -18,17 +18,17 @@ You open a new AI chat. You paste in your project structure. You explain what th
 
 **Go install:**
 ```sh
-go install github.com/ctxpackhq/ctxpack@v0.1.8
+go install github.com/ctxpackhq/ctxpack@v0.1.9
 ```
 
 **Pre-built binaries (no Go required):**
 
 | Platform | Download |
 |---|---|
-| Linux amd64 | [ctxpack-linux-amd64](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.8/ctxpack-linux-amd64) |
-| macOS amd64 | [ctxpack-darwin-amd64](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.8/ctxpack-darwin-amd64) |
-| macOS arm64 (M1/M2) | [ctxpack-darwin-arm64](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.8/ctxpack-darwin-arm64) |
-| Windows amd64 | [ctxpack-windows-amd64.exe](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.8/ctxpack-windows-amd64.exe) |
+| Linux amd64 | [ctxpack-linux-amd64](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.9/ctxpack-linux-amd64) |
+| macOS amd64 | [ctxpack-darwin-amd64](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.9/ctxpack-darwin-amd64) |
+| macOS arm64 (M1/M2) | [ctxpack-darwin-arm64](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.9/ctxpack-darwin-arm64) |
+| Windows amd64 | [ctxpack-windows-amd64.exe](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.9/ctxpack-windows-amd64.exe) |
 
 ---
 
@@ -112,4 +112,4 @@ Total: 3 files, 1767 tok
 
 ## License
 
-MIT
+[Business Source License 1.1](LICENSE)
