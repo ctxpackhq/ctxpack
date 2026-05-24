@@ -18,17 +18,17 @@ You open a new AI chat. You paste in your project structure. You explain what th
 
 **Go install:**
 ```sh
-go install github.com/ctxpackhq/ctxpack@v0.1.9
+go install github.com/ctxpackhq/ctxpack@v0.1.10
 ```
 
 **Pre-built binaries (no Go required):**
 
 | Platform | Download |
 |---|---|
-| Linux amd64 | [ctxpack-linux-amd64](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.9/ctxpack-linux-amd64) |
-| macOS amd64 | [ctxpack-darwin-amd64](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.9/ctxpack-darwin-amd64) |
-| macOS arm64 (M1/M2) | [ctxpack-darwin-arm64](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.9/ctxpack-darwin-arm64) |
-| Windows amd64 | [ctxpack-windows-amd64.exe](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.9/ctxpack-windows-amd64.exe) |
+| Linux amd64 | [ctxpack-linux-amd64](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.10/ctxpack-linux-amd64) |
+| macOS amd64 | [ctxpack-darwin-amd64](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.10/ctxpack-darwin-amd64) |
+| macOS arm64 (M1/M2) | [ctxpack-darwin-arm64](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.10/ctxpack-darwin-arm64) |
+| Windows amd64 | [ctxpack-windows-amd64.exe](https://github.com/ctxpackhq/ctxpack/releases/download/v0.1.10/ctxpack-windows-amd64.exe) |
 
 ---
 
@@ -74,7 +74,7 @@ Paste it directly into Claude, ChatGPT, or any chat interface — no manual file
 **Scan a different directory:**
 
 ```sh
-ctxpack "fix the auth bug" -d ~/projects/backend
+ctxpack "fix the auth bug" --dir ~/projects/backend
 ```
 
 **Pipe to a file instead of clipboard:**
@@ -83,7 +83,7 @@ ctxpack "fix the auth bug" -d ~/projects/backend
 ctxpack "refactor database layer" > context.md
 ```
 
-**Preview scored files without outputting content:**
+**Preview scored files before committing to a paste:**
 
 ```sh
 ctxpack "add rate limiting to the API handler" --preview
@@ -100,6 +100,19 @@ ctxpack "add rate limiting to the API handler" --preview
 Total: 3 files, 1767 tok
 ```
 
+No output is written to stdout or clipboard in preview mode.
+
+---
+
+## Flags
+
+| Flag | Default | Description |
+|---|---|---|
+| `-d, --dir` | `.` | Root directory to scan |
+| `--max-tokens` | `8000` | Token budget for selected files |
+| `--no-clipboard` | `false` | Write to stdout only; skip clipboard |
+| `--preview` | `false` | Show scored file table; no output |
+
 ---
 
 ## How it works
@@ -107,6 +120,13 @@ Total: 3 files, 1767 tok
 - Walks your repo, skipping `node_modules`, `.git`, `vendor`, lock files, and binaries.
 - Scores every file against your task description with TF-IDF — files whose content and path share the most terms with your task rank highest.
 - Greedily packs the top-scoring files into a single Markdown block, stopping at ~8 000 tokens.
+
+---
+
+## Security
+
+- `.env`, `.env.local`, and all `.env.*` files are never included in output.
+- `.gitignore` is respected — any file or directory your repo ignores, ctxpack ignores too.
 
 ---
 
