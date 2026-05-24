@@ -1,21 +1,16 @@
 Business Source License 1.1
 
 Licensor: ctxpackhq
-Licensed Work: ctxpack
+
+Licensed Work: ctxpack, including source code, binaries, documentation,
+and other files distributed in this repository.
+
+Additional Use Grant: You may make production use of the Licensed Work
+for personal, non-commercial purposes only. Commercial production use
+requires a separate commercial license from the Licensor.
+
 Change Date: 2030-01-01
+
 Change License: MIT License
 
-Additional Use Grant: You may use the Licensed Work for personal,
-non-commercial purposes only.
-
-For commercial use, please contact: tiniltom1998@gmail.com
-
----
-
-The Licensed Work is provided under the terms of the Business Source
-License 1.1 (the "License"). You may not use the Licensed Work except
-in compliance with the License. You may obtain a copy of the License at:
-https://mariadb.com/bsl11/
-
-On the Change Date, the Licensed Work will be made available under
-the Change License.
+Commercial licensing: tiniltom1998@gmail.com
