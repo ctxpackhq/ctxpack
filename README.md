@@ -2,7 +2,7 @@
 
 **Task-aware context bundler for AI coding tools**
 
-[![Demo](https://asciinema.org/a/rW8ppvrvaRhP6CXn.svg)](https://asciinema.org/a/rW8ppvrvaRhP6CXn)
+[![Demo](https://asciinema.org/a/VNvDN6vhL06FNeO5.svg)](https://asciinema.org/a/VNvDN6vhL06FNeO5)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
