@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	tokenBudget   = 4000
+	tokenBudget   = 8000
 	charsPerToken = 4
 	charBudget    = tokenBudget * charsPerToken
 )
@@ -294,6 +294,10 @@ func scoreFiles(files []fileEntry, task string) []fileEntry {
 			if strings.Contains(pathLower, term) {
 				score += 0.1
 			}
+		}
+
+		if strings.HasSuffix(pathLower, "_test.go") {
+			score *= 0.5
 		}
 
 		files[i].score = score

@@ -8,7 +8,7 @@
 
 You open a new AI chat. You paste in your project structure. You explain what the codebase does. Again. You do this every single session because the AI has no memory of what you built or why.
 
-`ctxpack` fixes this. Give it a task description; it scans your repo, ranks every file by relevance using TF-IDF, and bundles the top matches into a ready-to-paste context block — within a ~4 000-token budget.
+`ctxpack` fixes this. Give it a task description; it scans your repo, ranks every file by relevance using TF-IDF, and bundles the top matches into a ready-to-paste context block — within a ~8 000-token budget.
 
 ---
 
@@ -34,7 +34,7 @@ Copied to clipboard.
 --- Summary ---
 Files scanned:  43
 Files selected: 6
-Token estimate: 3821 / 4000
+Token estimate: 3821 / 8000
 ```
 
 The formatted context is written to stdout and copied to your clipboard:
@@ -77,7 +77,7 @@ ctxpack "refactor database layer" > context.md
 
 - Walks your repo, skipping `node_modules`, `.git`, `vendor`, lock files, and binaries.
 - Scores every file against your task description with TF-IDF — files whose content and path share the most terms with your task rank highest.
-- Greedily packs the top-scoring files into a single Markdown block, stopping at ~4 000 tokens.
+- Greedily packs the top-scoring files into a single Markdown block, stopping at ~8 000 tokens.
 
 ---
 
