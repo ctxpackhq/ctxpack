@@ -10,7 +10,9 @@ import (
 	"unicode"
 
 	"github.com/atotto/clipboard"
+	gitignore "github.com/sabhiram/go-gitignore"
 	"github.com/spf13/cobra"
+	"golang.org/x/term"
 )
 
 const (
@@ -69,6 +71,7 @@ type fileEntry struct {
 
 func main() {
 	var root string
+	var noClipboard bool
 
 	cmd := &cobra.Command{
 		Use:   "ctxpack \"task description\"",
@@ -76,18 +79,19 @@ func main() {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			task := args[0]
-			return run(task, root)
+			return run(task, root, noClipboard)
 		},
 	}
 
 	cmd.Flags().StringVarP(&root, "dir", "d", ".", "Root directory to scan")
+	cmd.Flags().BoolVar(&noClipboard, "no-clipboard", false, "Disable clipboard copy")
 
 	if err := cmd.Execute(); err != nil {
 		os.Exit(1)
 	}
 }
 
-func run(task, root string) error {
+func run(task, root string, noClipboard bool) error {
 	absRoot, err := filepath.Abs(root)
 	if err != nil {
 		return fmt.Errorf("resolving root: %w", err)
@@ -114,10 +118,12 @@ func run(task, root string) error {
 	}
 	tokens := (contentLen + charsPerToken - 1) / charsPerToken
 
-	if err := clipboard.WriteAll(output); err != nil {
-		fmt.Fprintf(os.Stderr, "Warning: could not copy to clipboard: %v\n", err)
-	} else {
-		fmt.Fprintf(os.Stderr, "Copied to clipboard.\n")
+	if !noClipboard && term.IsTerminal(int(os.Stdout.Fd())) {
+		if err := clipboard.WriteAll(output); err != nil {
+			fmt.Fprintf(os.Stderr, "Warning: could not copy to clipboard: %v\n", err)
+		} else {
+			fmt.Fprintf(os.Stderr, "Copied to clipboard.\n")
+		}
 	}
 
 	fmt.Fprintf(os.Stdout, "%s\n", output)
@@ -133,9 +139,19 @@ func run(task, root string) error {
 func collectFiles(root string) ([]fileEntry, error) {
 	var files []fileEntry
 
+	gi, _ := gitignore.CompileIgnoreFile(filepath.Join(root, ".gitignore"))
+
 	err := filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return nil // skip unreadable entries
+		}
+
+		rel, _ := filepath.Rel(root, path)
+		if gi != nil && gi.MatchesPath(rel) {
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
 		}
 
 		if d.IsDir() {
@@ -188,7 +204,6 @@ func collectFiles(root string) ([]fileEntry, error) {
 			return nil
 		}
 
-		rel, _ := filepath.Rel(root, path)
 		files = append(files, fileEntry{
 			path:    rel,
 			content: string(data),
@@ -258,6 +273,25 @@ func termFreq(tokens []string) map[string]float64 {
 	return tf
 }
 
+func isTestFile(path string) bool {
+	base := strings.ToLower(filepath.Base(path))
+	if strings.HasSuffix(base, "_test.go") ||
+		strings.HasSuffix(base, ".spec.ts") || strings.HasSuffix(base, ".test.ts") ||
+		strings.HasSuffix(base, ".spec.js") || strings.HasSuffix(base, ".test.js") ||
+		strings.HasSuffix(base, "_test.py") || strings.HasSuffix(base, ".snap") {
+		return true
+	}
+	if strings.HasPrefix(base, "test_") && strings.HasSuffix(base, ".py") {
+		return true
+	}
+	for _, component := range strings.Split(filepath.ToSlash(path), "/") {
+		if component == "__tests__" {
+			return true
+		}
+	}
+	return false
+}
+
 func scoreFiles(files []fileEntry, task string) []fileEntry {
 	queryTokens := tokenize(task)
 	queryTF := termFreq(queryTokens)
@@ -300,7 +334,7 @@ func scoreFiles(files []fileEntry, task string) []fileEntry {
 			}
 		}
 
-		if strings.HasSuffix(pathLower, "_test.go") {
+		if isTestFile(files[i].path) {
 			score *= 0.5
 		}
 
