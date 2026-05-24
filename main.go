@@ -46,7 +46,7 @@ var codeExts = map[string]bool{
 	".hcl": true, ".yaml": true, ".yml": true, ".toml": true, ".json": true,
 	".xml": true, ".html": true, ".css": true, ".scss": true, ".sass": true,
 	".less": true, ".sql": true, ".md": true, ".rst": true, ".txt": true,
-	".env": true, ".dockerfile": true, ".makefile": true, ".mk": true,
+	".dockerfile": true, ".makefile": true, ".mk": true,
 	".mod": true, ".sum": true, ".lock": true, ".proto": true, ".graphql": true,
 }
 
@@ -59,6 +59,8 @@ var skipFilenames = map[string]bool{
 	"poetry.lock":       true,
 	"composer.lock":     true,
 	"Cargo.lock":        true,
+	".env":              true,
+	".env.local":        true,
 }
 
 var knownNoExt = map[string]bool{
@@ -103,10 +105,23 @@ func run(task, root string, noClipboard, preview bool, maxTokens int) error {
 	if maxTokens <= 0 {
 		return fmt.Errorf("--max-tokens must be greater than zero")
 	}
+	if maxTokens > 1000000 {
+		return fmt.Errorf("--max-tokens must not exceed 1000000")
+	}
 
 	absRoot, err := filepath.Abs(root)
 	if err != nil {
 		return fmt.Errorf("resolving root: %w", err)
+	}
+	dirInfo, statErr := os.Stat(absRoot)
+	if statErr != nil {
+		if os.IsNotExist(statErr) {
+			return fmt.Errorf("directory does not exist: %s", absRoot)
+		}
+		return fmt.Errorf("accessing --dir path: %w", statErr)
+	}
+	if !dirInfo.IsDir() {
+		return fmt.Errorf("not a directory: %s", absRoot)
 	}
 
 	fmt.Fprintf(os.Stderr, "Scanning %s...\n", absRoot)
@@ -232,12 +247,16 @@ func collectFiles(root string) ([]fileEntry, error) {
 		}
 
 		name := d.Name()
-		if skipFilenames[strings.ToLower(name)] {
+		baseLower := strings.ToLower(name)
+		if skipFilenames[baseLower] {
+			return nil
+		}
+		// skip .env.* variants (e.g. .env.production, .env.test)
+		if strings.HasPrefix(baseLower, ".env.") {
 			return nil
 		}
 
 		ext := strings.ToLower(filepath.Ext(name))
-		baseLower := strings.ToLower(name)
 
 		if ext == "" && !knownNoExt[baseLower] {
 			return nil
